@@ -1,3 +1,6 @@
+import fs from "fs";
+import { stringify } from "csv-stringify";
+
 const buildYearBasis = () => {
     const yearBasisObject = [{ date: 'Agosto 2022' }, { date: 'Julio 2022' }, { date: 'Junio 2022' },
         { date: 'Mayo 2022' }, { date: 'Abril 2022' }, { date: 'Marzo 2022' }, { date: 'Febrero 2022' },
@@ -18,4 +21,16 @@ const buildYearBasis = () => {
     return yearBasisObject;
 }
 
-export default buildYearBasis;
+const exportToCsv = (columns, rows, filename = "saved_from_db.csv") => {
+    const writableStream = fs.createWriteStream(`./csv/${filename}`);
+    const stringifier = stringify({ header: true, columns: columns });
+
+    rows.forEach(row => {
+        stringifier.write(row);
+    });
+
+    stringifier.pipe(writableStream);
+    console.log(`Archivo creado ${filename}.`);
+  }
+
+export default { buildYearBasis, exportToCsv };
