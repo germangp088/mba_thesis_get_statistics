@@ -7,4 +7,9 @@ const buildMetadata = () => {
     }
 }
 
-export default buildMetadata;
+const createMetadataFile = (dictstring, filename = "metadata.json") => {
+    fs.writeFileSync(`./metadata/${filename}`, dictstring);
+    console.log(`Archivo creado ${filename}`);
+}
+
+export { buildMetadata, createMetadataFile };

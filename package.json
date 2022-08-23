@@ -9,7 +9,7 @@
     "generate:metadata": "npm run generate:metadata:magicEden && npm run generate:metadata:solanart && npm run generate:metadata:solport",
     "generate:metadata:magicEden": "node scripts/magicEdenMetadata.js",
     "generate:metadata:solanart": "node scripts/solanartMetadata.js",
-    "generate:metadata:solport": "node scripts/solanartMetadata.js",
+    "generate:metadata:solport": "node scripts/solportMetadata.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

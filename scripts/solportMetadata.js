@@ -1,32 +1,16 @@
-import fs from "fs";
 import _ from "lodash";
 import "dotenv/config";
-import buildMetadata from "./buildMetadata.js";
+import { buildMetadata, createMetadataFile } from "./buildMetadata.js";
 import { getDataFromAPI } from "../src/proxy.js";
 
 const solportApi = "https://lapi.solport.io/nft/collections?page=";
 const MAX_REQUESTS = process.env.MAX_REQUESTS;
+const MAX_CONCURRENCY = process.env.MAX_CONCURRENCY;
 const MAX_RETRY = process.env.MAX_RETRY;
 let urls = [];
 let retries = 0;
 
 const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
-
-const fetchUrl = async (url) => {
-    let data;
-    try {
-        const json = await getDataFromAPI(url);
-        data = {
-            ...json,
-            success: true
-        }
-    } catch (error) {
-        console.log(`Reintentando ${url}`);
-        data = { url, success: false };
-    }
-
-    return data;
-}
 
 const buildURLs = () => {
     for (let index = 0; index < MAX_REQUESTS; index++) {
@@ -50,7 +34,7 @@ const buildRequests = (urls) => {
 }
 
 const retry = async (responsesToRetry, responses) => {
-    if (responsesToRetry.length > 0 && retries < MAX_RETRY) {
+    if (responsesToRetry.length > 0 && retries <= MAX_RETRY) {
         console.log(`Reintento numero: ${(retries + 1)}`);
         responses = responses.filter(x => x.success);
         const urlsToRetry = responsesToRetry.map(x => x.url);
@@ -66,13 +50,31 @@ const retry = async (responsesToRetry, responses) => {
     }
 }
 
+const fetchUrl = async (url) => {
+    let data;
+    try {
+        const json = await getDataFromAPI(url);
+        data = {
+            ...json,
+            success: true
+        }
+    } catch (error) {
+        console.log(`Reintentando ${url}`);
+        data = { url, success: false };
+    }
+
+    return data;
+}
+
 const fetchURLs = async(urls) => {
     const requests = buildRequests(urls);
+    const maxSplit = Math.ceil(requests.length / MAX_CONCURRENCY);
 
-    let responses = [];
-
-    const responsesExecuted = await Promise.all(requests);
-    responses = responses.concat(responsesExecuted);
+    let responses = []
+    for (let index = 0; index < maxSplit; index++) {
+        const responsesExecuted = await Promise.all(requests.splice(0, MAX_CONCURRENCY));
+        responses = responses.concat(responsesExecuted);
+    }
 
     urls = responses.map((response) => !response.success ? response.url : '').filter(x => x != '');
 
@@ -82,23 +84,30 @@ const fetchURLs = async(urls) => {
     return responses;
 }
 
-// Create solport metadata file.
-const buildSolport = async () => {
-    buildMetadata();
-    buildURLs();
-    
-    const responses = await fetchURLs(urls);
-    const data = _.cloneDeep(responses.filter(x => x.success));
-    console.log(data)
+const filterData = (responses, success = true) => {
+    const data = _.cloneDeep(responses.filter(x => x.success == success));
     let jsonData = [];
 
     data.forEach(element => {
         jsonData = jsonData.concat(element.collections);
     });
 
-    const dictstring = JSON.stringify({collections: jsonData});
-    fs.writeFileSync("./metadata/solport.json", dictstring);
-    console.log("Archivo creado solport.json.");
+    return jsonData;
+}
+
+// Create solport metadata file.
+const buildSolport = async () => {
+    buildMetadata();
+    buildURLs();
+    
+    const responses = await fetchURLs(urls);
+    const successData = filterData(responses, true);
+    const failedData = filterData(responses, false);
+
+    const dictstring = JSON.stringify({collections: successData});
+    const dictstringError = JSON.stringify(failedData);
+    createMetadataFile(dictstring, "solport.json");
+    createMetadataFile(dictstringError, "solport_failed.json");
 }
 
 await buildSolport();

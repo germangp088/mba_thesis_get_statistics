@@ -1,6 +1,6 @@
 import fs from "fs";
 import puppeteer from "puppeteer";
-import buildMetadata from "./buildMetadata.js";
+import { buildMetadata } from "./buildMetadata.js";
 
 const buildMagicEden = async () => {
     buildMetadata();
