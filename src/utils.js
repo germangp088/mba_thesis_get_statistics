@@ -43,4 +43,4 @@ const exportToCsv = (columns, rows, filename = "results.xls") => {
     console.log(`Archivo creado ${filename}.`);
 }
 
-export default { buildYearBasis, exportToCsv };
+export { buildYearBasis, exportToCsv };

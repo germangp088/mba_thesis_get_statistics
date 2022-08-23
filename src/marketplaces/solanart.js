@@ -3,21 +3,23 @@ import RichOutput from "rich-output";
 import { buildYearBasis, exportToCsv } from "../utils.js";
 import { calculateArithmeticAverage } from "../math.js";
 
-const getMagicEdenArithmeticAverage = async () => {
+const getSolanArtArithmeticAverage = async () => {
     const yearBasisObject = buildYearBasis();
 
-    const magiceden = JSON.parse(await readFile(new URL('./metadata/magiceden.json', import.meta.url)));
+    const solanart = JSON.parse(await readFile(new URL('./metadata/solanart.json', import.meta.url)));
+    
+    const getDate = (seconds) => new Date(seconds * 1000).toISOString()
     
     const getCollectionByMonth = (startDate, endDate) =>
-                                    magiceden.collections.filter(x => x.createdAt >= startDate &&
-                                    x.createdAt <= endDate);
+                                    solanart.filter(x => getDate(x.date) >= startDate &&
+                                        getDate(x.date) <= endDate);
     
     yearBasisObject.forEach(monthElement => {
         const monthListedCollections = getCollectionByMonth(monthElement.startDate, monthElement.endDate)
         monthElement.count = monthListedCollections?.length
     });
     
-    console.log(RichOutput.underscore(RichOutput.bold(RichOutput.brightBlue("Cantidad de colecciones listadas por mes en Magic Eden."))));
+    console.log(RichOutput.underscore(RichOutput.bold(RichOutput.brightBlue("Cantidad de colecciones listadas por mes en Solanart."))));
     const tableData = yearBasisObject.map((monthElement) => {
         return { 
             Fecha: monthElement.date,
@@ -32,9 +34,9 @@ const getMagicEdenArithmeticAverage = async () => {
 
     console.log(`Media aritmetica de lanzamiento de colecciones: ${RichOutput.green(magicEdenArithmeticAverage)}.`);
 
-    exportToCsv(months, [collections], "magic_eden.xlsx");
+    exportToCsv(months, [collections], "solanart.xlsx");
 
     return magicEdenArithmeticAverage;
 }
 
-export default getMagicEdenArithmeticAverage;
+export default getSolanArtArithmeticAverage;

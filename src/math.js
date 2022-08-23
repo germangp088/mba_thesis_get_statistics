@@ -2,4 +2,4 @@ const calculateArithmeticAverage = values => Math.ceil(values.reduce((a, b) => a
 
 const calculatePercentage = (value, percentage) => value * percentage;
 
-export default { calculateArithmeticAverage, calculatePercentage };
+export { calculateArithmeticAverage, calculatePercentage };
