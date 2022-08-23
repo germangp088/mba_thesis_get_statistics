@@ -9,7 +9,7 @@ const getDataFromAPI = async (endpoint, options = undefined) => {
         const response = await fetch(endpoint, options);
 
         if(response.status > 400){
-            throw new Error();
+            throw new Error(response.status);
         }
 
         data = await response.json();
