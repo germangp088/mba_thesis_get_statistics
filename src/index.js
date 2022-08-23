@@ -1,11 +1,14 @@
 import RichOutput from "rich-output";
-import { getMagicEdenArithmeticAverage, getSolanArtArithmeticAverage } from "./marketplaces/index.js";
+import { getMagicEdenArithmeticAverage, getSolanArtArithmeticAverage, getOpenSeaArithmeticAverage } from "./marketplaces/index.js";
 import { calculateArithmeticAverage, calculatePercentage } from "./math.js";
 
+const openSeaArithmeticAverage = await getOpenSeaArithmeticAverage();
 const magicEdenArithmeticAverage = await getMagicEdenArithmeticAverage();
 const solanArtArithmeticAverage = await getSolanArtArithmeticAverage();
 
-const arithmeticAverage = calculateArithmeticAverage([magicEdenArithmeticAverage, solanArtArithmeticAverage]);
+const arithmeticAverages = [magicEdenArithmeticAverage, solanArtArithmeticAverage, openSeaArithmeticAverage];
+
+const arithmeticAverage = calculateArithmeticAverage(arithmeticAverages);
 console.log(`Media aritmetica de lanzamiento de colecciones total: ${RichOutput.green(arithmeticAverage)}.`);
 
 const estimatedQty = calculatePercentage(arithmeticAverage, 0.625)

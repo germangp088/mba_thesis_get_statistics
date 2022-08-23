@@ -1,0 +1,1 @@
+total de colecciones listadas en solsea: (5 * 8) * 330

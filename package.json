@@ -11,8 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "api": "^4.5.2",
     "csv-stringify": "^6.2.0",
     "node-fetch": "^3.2.10",
-    "rich-output": "^1.0.1"
+    "opensea-js": "^4.0.7",
+    "rich-output": "^1.0.1",
+    "web3": "^1.7.5"
   }
 }
