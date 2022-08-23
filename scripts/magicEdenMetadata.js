@@ -1,6 +1,6 @@
 import fs from "fs";
 import puppeteer from "puppeteer";
-import { buildMetadata } from "./buildMetadata.js";
+import { buildMetadata, createMetadataFile } from "./buildMetadata.js";
 
 const buildMagicEden = async () => {
     buildMetadata();
@@ -21,8 +21,7 @@ const buildMagicEden = async () => {
   
     await browser.close();
 
-    fs.writeFileSync("./metadata/magiceden.json", dictstring);
-    console.log("Archivo creado magiceden.json.");
+    createMetadataFile(dictstring, "magiceden.json");
 }
 
 await buildMagicEden();
