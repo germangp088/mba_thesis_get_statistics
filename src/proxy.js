@@ -3,10 +3,10 @@ import fetch from "node-fetch";
 
 const getDataFromJSON = async (file) => JSON.parse(await readFile(new URL(file, import.meta.url)));
 
-const getDataFromAPI = async (endpoint) => {
+const getDataFromAPI = async (endpoint, options = undefined) => {
     let data;
     try {
-        const response = await fetch(endpoint);
+        const response = await fetch(endpoint, options);
 
         if(response.status > 400){
             throw new Error();

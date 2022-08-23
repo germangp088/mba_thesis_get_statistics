@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "generate:solport:metadata": "node src/marketplaces/solport/generateMetadata.js",
+    "generate:metadata": "node src/builders/metadata/buildMetadata.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

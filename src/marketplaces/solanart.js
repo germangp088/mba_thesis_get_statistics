@@ -1,9 +1,8 @@
 import { exportToCsv } from "../utils.js";
-import { getDataFromJSON, getDataFromAPI } from "../proxy.js";
+import { getDataFromJSON } from "../proxy.js";
 import getStatistics from "./statistics.js";
 
 const getSolanArtArithmeticAverage = async () => {
-    //const solanartData = await getDataFromAPI("https://api.solanart.io/get_collections");
     const solanartData = await getDataFromJSON("../metadata/solanart.json", import.meta.url);
 
     const getDate = (seconds) => new Date(seconds * 1000).toISOString();
