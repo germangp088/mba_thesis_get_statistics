@@ -1,7 +1,8 @@
 import { readFile } from 'fs/promises';
 import * as utils from "../utils.js";
+import * as math from "../math.js";
 
-const getMagicEdenStats = async () => {
+const getMagicEdenArithmeticAverage = async () => {
     const yearBasisObject = utils.default.buildYearBasis();
 
     const magiceden = JSON.parse(await readFile(new URL('./metadata/magiceden.json', import.meta.url)));
@@ -17,19 +18,24 @@ const getMagicEdenStats = async () => {
         monthElement.count = monthListedCollections?.length
     });
     
+    console.log("Cantidad de colecciones lanzadas por mes en Magic Eden.");
     const tableData = yearBasisObject.map((monthElement) => {
         return { 
             Fecha: monthElement.date,
             Colecciones: monthElement.count
         }
     })
-    
     console.table(tableData);
 
-    const columns = tableData.map(x => x.Fecha);
-    const row = tableData.map(x => x.Colecciones);
+    const months = tableData.map(x => x.Fecha).reverse();
+    const collections = tableData.map(x => x.Colecciones).reverse();
+    const magicEdenArithmeticAverage = math.default.calculateArithmeticAverage(collections);
 
-    utils.default.exportToCsv(columns, [row], "magic_eden.csv");
+    console.log(`Media aritmetica de lanzamiento de colecciones: ${magicEdenArithmeticAverage}.`);
+
+    utils.default.exportToCsv(months, [collections], "magic_eden.xlsx");
+
+    return magicEdenArithmeticAverage;
 }
 
-export default getMagicEdenStats;
+export default getMagicEdenArithmeticAverage;

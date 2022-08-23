@@ -21,9 +21,14 @@ const buildYearBasis = () => {
     return yearBasisObject;
 }
 
-const exportToCsv = (columns, rows, filename = "saved_from_db.csv") => {
-    const writableStream = fs.createWriteStream(`./csv/${filename}`);
-    const stringifier = stringify({ header: true, columns: columns });
+const exportToCsv = (columns, rows, filename = "results.xls") => {
+    const folderName = './csv';
+    if (!fs.existsSync(folderName)) {
+        fs.mkdirSync(folderName);
+    }
+
+    const writableStream = fs.createWriteStream(`${folderName}/${filename}`);
+    const stringifier = stringify({ header: true, cast: { string: (str) => str.toLocaleUpperCase() }, columns: columns });
 
     rows.forEach(row => {
         stringifier.write(row);
@@ -31,6 +36,6 @@ const exportToCsv = (columns, rows, filename = "saved_from_db.csv") => {
 
     stringifier.pipe(writableStream);
     console.log(`Archivo creado ${filename}.`);
-  }
+}
 
 export default { buildYearBasis, exportToCsv };

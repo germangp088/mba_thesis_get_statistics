@@ -1,3 +1,3 @@
-import getMagicEdenStats from "./marketplaces/magiceden.js";
+import getMagicEdenArithmeticAverage from "./marketplaces/magiceden.js";
 
-getMagicEdenStats()
+const magicEdenArithmeticAverage = await getMagicEdenArithmeticAverage();
