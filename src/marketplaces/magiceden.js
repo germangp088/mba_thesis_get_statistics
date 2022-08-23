@@ -3,7 +3,7 @@ import { exportToCsv } from "../utils.js";
 import getStatistics from "./statistics.js";
 
 const getMagicEdenArithmeticAverage = async () => {
-    const magicEdenData = JSON.parse(await readFile(new URL("./metadata/magiceden.json", import.meta.url)));
+    const magicEdenData = JSON.parse(await readFile(new URL("../../metadata/magiceden.json", import.meta.url)));
     
     const filter = (magicEden, startDate, endDate) => magicEden.collections.filter(x => x.createdAt >= startDate &&
                                                                                         x.createdAt <= endDate)
