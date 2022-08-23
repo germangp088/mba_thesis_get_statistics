@@ -1,7 +1,8 @@
 import fs from "fs";
-import { getDataFromAPI } from "../src/proxy.js";
 import _ from "lodash";
 import "dotenv/config";
+import buildMetadata from "./buildMetadata.js";
+import { getDataFromAPI } from "../src/proxy.js";
 
 const solportApi = "https://lapi.solport.io/nft/collections?page=";
 const MAX_REQUESTS = process.env.MAX_REQUESTS;
@@ -83,6 +84,7 @@ const fetchURLs = async(urls) => {
 
 // Create solport metadata file.
 const buildSolport = async () => {
+    buildMetadata();
     buildURLs();
     
     const responses = await fetchURLs(urls);
@@ -99,4 +101,4 @@ const buildSolport = async () => {
     console.log("Archivo creado solport.json.");
 }
 
-export default buildSolport;
+await buildSolport();

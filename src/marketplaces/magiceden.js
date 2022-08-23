@@ -1,5 +1,5 @@
 import { exportToCsv } from "../utils.js";
-import { getDataFromJSON, getDataFromAPI } from "../proxy.js";
+import { getDataFromJSON } from "../proxy.js";
 import getStatistics from "./statistics.js";
 
 const getMagicEdenArithmeticAverage = async () => {

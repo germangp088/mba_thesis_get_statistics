@@ -6,20 +6,20 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "cypress": "cypress",
-    "cypress:open": "cypress open",
-    "generate:metadata": "node scripts/buildMetadata.js",
-    "generate:metadata:magiceden": "npm run cypress:open",
+    "generate:metadata": "npm run generate:metadata:magicEden && npm run generate:metadata:solanart && npm run generate:metadata:solport",
+    "generate:metadata:magicEden": "node scripts/magicEdenMetadata.js",
+    "generate:metadata:solanart": "node scripts/solanartMetadata.js",
+    "generate:metadata:solport": "node scripts/solanartMetadata.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chrome-launcher": "^0.15.1",
     "csv-stringify": "^6.2.0",
     "dotenv": "^16.0.1",
     "lodash": "^4.17.21",
     "node-fetch": "^3.2.10",
+    "puppeteer": "^16.2.0",
     "rich-output": "^1.0.1"
   }
 }
