@@ -5,6 +5,7 @@ import { buildMetadata, createMetadataFile } from "./buildMetadata.js";
 import { getDataFromJSON, getDataFromAPI } from "../src/proxy.js";
 
 const solportApi = "https://lapi.solport.io/nft/collections?page=";
+const metadataFolderPath = "./metadata";
 const MAX_REQUESTS = process.env.MAX_REQUESTS;
 const MAX_CONCURRENCY = process.env.MAX_CONCURRENCY;
 const MAX_RETRY = process.env.MAX_RETRY;
@@ -13,12 +14,32 @@ let retries = 0;
 
 const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
 
-const buildURLs = () => {
+const buildURLs = async () => {
+
+    let urlsToRetry = [];
+    if (fs.existsSync("./metadata/solport_failed.json")) {
+        urlsToRetry = await getDataFromJSON("../metadata/solport_failed.json", import.meta.url);
+        if (urlsToRetry.length > 0) {
+            urls = urls.concat(urlsToRetry)
+        }
+    }
+    
+    let urlsSuccess = [];
+    if (fs.existsSync("./metadata/solport_success.json")) {
+        urlsSuccess = await getDataFromJSON("../metadata/solport_success.json", import.meta.url);
+    }
+
     for (let index = 0; index < MAX_REQUESTS; index++) {
         console.log(`Creando url indice: ${index}`);
         const page = index + 1;
         const url = `${solportApi}${page}`;
-        urls.push(url);
+
+        const existsOnFailed = urlsToRetry.some(x => x == url);
+        const existsOnSuccess = urlsSuccess.some(x => x == url);
+
+        if (!existsOnFailed && !existsOnSuccess) {
+            urls.push(url);
+        }
     }
 }
 
@@ -57,6 +78,7 @@ const fetchUrl = async (url) => {
         const json = await getDataFromAPI(url);
         data = {
             ...json,
+            url,
             success: true
         }
     } catch (error) {
@@ -107,28 +129,25 @@ const filterData = (responses, success = true) => {
 // Create solport metadata file.
 const buildSolport = async () => {
     buildMetadata();
-
-    const urlsToRetry = await getDataFromJSON("../metadata/solport_failed.json", import.meta.url);
-    if (urlsToRetry.length == 0) {
-        buildURLs();
-    } else {
-        urls = urlsToRetry;
-    }
+    await buildURLs();
     
     const responses = await fetchURLs(urls);
+    const successURLs = _.cloneDeep(responses.filter(x => x.success)).map(x => x.url);
     const successData = filterData(responses, true);
     const failedData = filterData(responses, false);
 
     if (successData.length > 0) {
         const dictstring = JSON.stringify({collections: successData});
         createMetadataFile(dictstring, "solport.json");
+        const jsonURLs = JSON.stringify(successURLs);
+        createMetadataFile(jsonURLs, "solport_success.json");
     }
 
     if (failedData.length > 0) {
         const dictstringError = JSON.stringify(failedData);
         createMetadataFile(dictstringError, "solport_failed.json");
     } else {
-        fs.unlinkSync("../metadata/solport_failed.json");
+        fs.unlinkSync("./metadata/solport_failed.json");
     }
 }
 
