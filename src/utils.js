@@ -40,7 +40,7 @@ const exportToCsv = (columns, rows, filename = "results.xls") => {
     });
 
     stringifier.pipe(writableStream);
-    console.log(`Archivo creado ${filename}.`);
+    console.log(`Archivo creado ${filename}.\n`);
 }
 
 export { buildYearBasis, exportToCsv };
