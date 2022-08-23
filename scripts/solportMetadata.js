@@ -114,7 +114,9 @@ const filterData = (responses, success = true) => {
 
     if (success) {
         data.forEach(element => {
-            jsonData = jsonData.concat(element.collections);
+            if (element.collections.length > 0) {
+                jsonData = jsonData.concat(element.collections);
+            }
         });
     } else {
         
