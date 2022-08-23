@@ -1,6 +1,7 @@
 import { readFile } from 'fs/promises';
 import * as utils from "../utils.js";
 import * as math from "../math.js";
+import RichOutput from "rich-output";
 
 const getMagicEdenArithmeticAverage = async () => {
     const yearBasisObject = utils.default.buildYearBasis();
@@ -18,7 +19,7 @@ const getMagicEdenArithmeticAverage = async () => {
         monthElement.count = monthListedCollections?.length
     });
     
-    console.log("Cantidad de colecciones lanzadas por mes en Magic Eden.");
+    console.log(RichOutput.underscore(RichOutput.bold(RichOutput.brightBlue("Cantidad de colecciones listadas por mes en Magic Eden."))));
     const tableData = yearBasisObject.map((monthElement) => {
         return { 
             Fecha: monthElement.date,
@@ -31,7 +32,7 @@ const getMagicEdenArithmeticAverage = async () => {
     const collections = tableData.map(x => x.Colecciones).reverse();
     const magicEdenArithmeticAverage = math.default.calculateArithmeticAverage(collections);
 
-    console.log(`Media aritmetica de lanzamiento de colecciones: ${magicEdenArithmeticAverage}.`);
+    console.log(`Media aritmetica de lanzamiento de colecciones: ${RichOutput.green(magicEdenArithmeticAverage)}.`);
 
     utils.default.exportToCsv(months, [collections], "magic_eden.xlsx");
 

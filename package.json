@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "csv-stringify": "^6.2.0"
+    "csv-stringify": "^6.2.0",
+    "rich-output": "^1.0.1"
   }
 }
