@@ -5,18 +5,19 @@ import { buildMetadata, createMetadataFile } from "./buildMetadata.js";
 import { getDataFromJSON, getDataFromAPI } from "../src/proxy.js";
 
 const solportApi = "https://lapi.solport.io/nft/collections?page=";
-const metadataFolderPath = "./metadata";
 const MAX_REQUESTS = process.env.MAX_REQUESTS;
 const MAX_CONCURRENCY = process.env.MAX_CONCURRENCY;
 const MAX_RETRY = process.env.MAX_RETRY;
 let urls = [];
+let urlsSuccess = [];
+let urlsToRetry = [];
 let retries = 0;
+
+const combineArrays = (a, b) => a.concat(b.filter((item) => a.indexOf(item) < 0));
 
 const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
 
 const buildURLs = async () => {
-
-    let urlsToRetry = [];
     if (fs.existsSync("./metadata/solport_failed.json")) {
         urlsToRetry = await getDataFromJSON("../metadata/solport_failed.json", import.meta.url);
         if (urlsToRetry.length > 0) {
@@ -24,22 +25,31 @@ const buildURLs = async () => {
         }
     }
     
-    let urlsSuccess = [];
     if (fs.existsSync("./metadata/solport_success.json")) {
         urlsSuccess = await getDataFromJSON("../metadata/solport_success.json", import.meta.url);
     }
+    
+    let max_requests_difference =  MAX_REQUESTS - urls.length;
 
-    for (let index = 0; index < MAX_REQUESTS; index++) {
-        console.log(`Creando url indice: ${index}`);
-        const page = index + 1;
-        const url = `${solportApi}${page}`;
-
-        const existsOnFailed = urlsToRetry.some(x => x == url);
-        const existsOnSuccess = urlsSuccess.some(x => x == url);
-
-        if (!existsOnFailed && !existsOnSuccess) {
-            urls.push(url);
+    if (max_requests_difference > 0) {
+        let index = 0;
+        while (max_requests_difference > 0) {
+            const page = index + 1;
+            const url = `${solportApi}${page}`;
+    
+            const existsOnFailed = urlsToRetry.some(x => x == url);
+            const existsOnSuccess = urlsSuccess.some(x => x == url);
+    
+            if (!existsOnFailed && !existsOnSuccess) {
+                console.log(`Creando url indice: ${index}`);
+                urls.push(url);
+            }
+            index++;
+            max_requests_difference =  MAX_REQUESTS - urls.length
         }
+    } else if(max_requests_difference < 0) {
+        const urlsToSplice = urls.length - MAX_REQUESTS;
+        urls.splice(urlsToSplice, urls.length-1);
     }
 }
 
@@ -59,7 +69,7 @@ const retry = async (responsesToRetry, responses) => {
     if (responsesToRetry.length > 0 && retries < MAX_RETRY) {
         console.log(`Reintento numero: ${(retries + 1)}`);
         responses = responses.filter(x => x.success);
-        const urlsToRetry = responsesToRetry.map(x => x.url);
+        const urlsToExecuteRetry = responsesToRetry.map(x => x.url);
 
         // Delay operation to cool down rate limiter.
         await delay(_.parseInt(process.env.DELAY));
@@ -67,7 +77,7 @@ const retry = async (responsesToRetry, responses) => {
         retries++;
 
         // Executes fetchURLs recursivelly to retry the unsuccesfully requests.
-        const retryResponses = await fetchURLs(urlsToRetry);
+        const retryResponses = await fetchURLs(urlsToExecuteRetry);
         responses = responses.concat(retryResponses);
     }
 }
@@ -96,6 +106,7 @@ const fetchURLs = async(urls) => {
     let responses = []
     for (let index = 0; index < maxSplit; index++) {
         const responsesExecuted = await Promise.all(requests.splice(0, MAX_CONCURRENCY));
+        await delay(_.parseInt(process.env.DELAY));
         responses = responses.concat(responsesExecuted);
     }
 
@@ -130,24 +141,31 @@ const filterData = (responses, success = true) => {
 
 // Create solport metadata file.
 const buildSolport = async () => {
+    const solportData = await getDataFromJSON("../metadata/solport.json", import.meta.url);
     buildMetadata();
     await buildURLs();
     
     const responses = await fetchURLs(urls);
-    const successURLs = _.cloneDeep(responses.filter(x => x.success)).map(x => x.url);
+    
+    const urlsExecutedSucessfully = _.cloneDeep(responses.filter(x => x.success)).map(x => x.url);
     const successData = filterData(responses, true);
     const failedData = filterData(responses, false);
 
     if (successData.length > 0) {
-        const dictstring = JSON.stringify({collections: successData});
+        const newSolportData = {
+            collections: combineArrays(solportData.collections, successData)
+        }
+        const dictstring = JSON.stringify(newSolportData);
         createMetadataFile(dictstring, "solport.json");
-        const jsonURLs = JSON.stringify(successURLs);
+        const newSuccessURLs = combineArrays(urlsSuccess, urlsExecutedSucessfully);
+        const jsonURLs = JSON.stringify(newSuccessURLs);
         createMetadataFile(jsonURLs, "solport_success.json");
     }
 
     if (failedData.length > 0) {
-        const dictstringError = JSON.stringify(failedData);
-        createMetadataFile(dictstringError, "solport_failed.json");
+        const newFailedURLs = combineArrays(urlsToRetry, failedData);
+        const jsonFailedURLs = JSON.stringify(newFailedURLs);
+        createMetadataFile(jsonFailedURLs, "solport_failed.json");
     } else {
         fs.unlinkSync("./metadata/solport_failed.json");
     }
