@@ -1,7 +1,8 @@
+import fs from "fs";
 import _ from "lodash";
 import "dotenv/config";
 import { buildMetadata, createMetadataFile } from "./buildMetadata.js";
-import { getDataFromAPI } from "../src/proxy.js";
+import { getDataFromJSON, getDataFromAPI } from "../src/proxy.js";
 
 const solportApi = "https://lapi.solport.io/nft/collections?page=";
 const MAX_REQUESTS = process.env.MAX_REQUESTS;
@@ -34,7 +35,7 @@ const buildRequests = (urls) => {
 }
 
 const retry = async (responsesToRetry, responses) => {
-    if (responsesToRetry.length > 0 && retries <= MAX_RETRY) {
+    if (responsesToRetry.length > 0 && retries < MAX_RETRY) {
         console.log(`Reintento numero: ${(retries + 1)}`);
         responses = responses.filter(x => x.success);
         const urlsToRetry = responsesToRetry.map(x => x.url);
@@ -85,12 +86,20 @@ const fetchURLs = async(urls) => {
 }
 
 const filterData = (responses, success = true) => {
-    const data = _.cloneDeep(responses.filter(x => x.success == success));
+    const data = responses.filter(x => x.success == success);
+
     let jsonData = [];
 
-    data.forEach(element => {
-        jsonData = jsonData.concat(element.collections);
-    });
+    if (success) {
+        data.forEach(element => {
+            jsonData = jsonData.concat(element.collections);
+        });
+    } else {
+        
+        data.forEach(element => {
+            jsonData.push(element.url);
+        });
+    }
 
     return jsonData;
 }
@@ -98,16 +107,29 @@ const filterData = (responses, success = true) => {
 // Create solport metadata file.
 const buildSolport = async () => {
     buildMetadata();
-    buildURLs();
+
+    const urlsToRetry = await getDataFromJSON("../metadata/solport_failed.json", import.meta.url);
+    if (urlsToRetry.length == 0) {
+        buildURLs();
+    } else {
+        urls = urlsToRetry;
+    }
     
     const responses = await fetchURLs(urls);
     const successData = filterData(responses, true);
     const failedData = filterData(responses, false);
 
-    const dictstring = JSON.stringify({collections: successData});
-    const dictstringError = JSON.stringify(failedData);
-    createMetadataFile(dictstring, "solport.json");
-    createMetadataFile(dictstringError, "solport_failed.json");
+    if (successData.length > 0) {
+        const dictstring = JSON.stringify({collections: successData});
+        createMetadataFile(dictstring, "solport.json");
+    }
+
+    if (failedData.length > 0) {
+        const dictstringError = JSON.stringify(failedData);
+        createMetadataFile(dictstringError, "solport_failed.json");
+    } else {
+        fs.unlinkSync("../metadata/solport_failed.json");
+    }
 }
 
 await buildSolport();

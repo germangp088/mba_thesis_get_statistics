@@ -1,4 +1,3 @@
-import fs from "fs";
 import { getDataFromAPI } from "../src/proxy.js";
 import { buildMetadata, createMetadataFile } from "./buildMetadata.js";
 
