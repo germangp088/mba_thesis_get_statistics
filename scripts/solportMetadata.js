@@ -70,6 +70,7 @@ const buildRequests = (urls) => {
 }
 
 const retry = async (responsesToRetry, responses) => {
+    
     if (responsesToRetry.length > 0 && retries < MAX_RETRY) {
         console.log(`Reintento numero: ${(retries + 1)}`);
         responses = responses.filter(x => x.success);
@@ -81,9 +82,11 @@ const retry = async (responsesToRetry, responses) => {
         retries++;
 
         // Executes fetchURLs recursivelly to retry the unsuccesfully requests.
-        const retryResponses = await fetchURLs(urlsToExecuteRetry);
-        responses = responses.concat(retryResponses);
+        const retryResponses = await fetchURLs(urlsToExecuteRetry, responses);
+        responses = combineArrays(responses, retryResponses);
     }
+
+    return responses;
 }
 
 const fetchUrl = async (url) => {
@@ -103,15 +106,14 @@ const fetchUrl = async (url) => {
     return data;
 }
 
-const fetchURLs = async(urls) => {
+const fetchURLs = async(urls, responses) => {
     const requests = buildRequests(urls);
     const maxSplit = Math.ceil(requests.length / MAX_CONCURRENCY);
 
-    let responses = []
     for (let index = 0; index < maxSplit; index++) {
         const responsesExecuted = await Promise.all(requests.splice(0, MAX_CONCURRENCY));
         await delay(_.parseInt(process.env.DELAY));
-        responses = responses.concat(responsesExecuted);
+        responses = combineArrays(responses, responsesExecuted);
     }
 
     urls = responses.map((response) => !response.success ? response.url : '').filter(x => x != '');
@@ -121,7 +123,7 @@ const fetchURLs = async(urls) => {
 
     const responsesToRetry = responses.filter(x => !x.success && !successResponses.some(y => y.url == x.url));
     if (responsesToRetry.length > 0) {
-        await retry(responsesToRetry, responses);
+        responses = await retry(responsesToRetry, responses);
     }
 
     return responses;
@@ -154,7 +156,8 @@ const buildSolport = async () => {
     buildMetadata();
     await buildURLs();
     
-    const responses = await fetchURLs(urls);
+    let responses = [];
+    responses = await fetchURLs(urls, responses);
     
     const urlsExecutedSucessfully = _.cloneDeep(responses.filter(x => x.success)).map(x => x.url);
 
@@ -178,7 +181,9 @@ const buildSolport = async () => {
         const jsonFailedURLs = JSON.stringify(newFailedURLs);
         createMetadataFile(jsonFailedURLs, "solport_failed.json");
     } else {
-        fs.unlinkSync("./metadata/solport_failed.json");
+        if (fs.existsSync("./metadata/solport_failed.json")) {
+            fs.unlinkSync("./metadata/solport_failed.json");
+        }
     }
 }
 
