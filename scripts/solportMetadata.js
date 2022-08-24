@@ -17,6 +17,8 @@ const combineArrays = (a, b) => a.concat(b.filter((item) => a.indexOf(item) < 0)
 
 const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
 
+const getURLsQty = () => urls.length;
+
 const buildURLs = async () => {
     if (fs.existsSync("./metadata/solport_failed.json")) {
         urlsToRetry = await getDataFromJSON("../metadata/solport_failed.json", import.meta.url);
@@ -29,7 +31,7 @@ const buildURLs = async () => {
         urlsSuccess = await getDataFromJSON("../metadata/solport_success.json", import.meta.url);
     }
     
-    let max_requests_difference =  MAX_REQUESTS - urls.length;
+    let max_requests_difference =  MAX_REQUESTS - getURLsQty();
 
     if (max_requests_difference > 0) {
         let index = 0;
@@ -45,11 +47,10 @@ const buildURLs = async () => {
                 urls.push(url);
             }
             index++;
-            max_requests_difference =  MAX_REQUESTS - urls.length
+            max_requests_difference =  MAX_REQUESTS - getURLsQty()
         }
     } else if(max_requests_difference < 0) {
-        const urlsToSplice = urls.length - MAX_REQUESTS;
-        urls.splice(urlsToSplice, urls.length-1);
+        urls = urls.slice(0, MAX_REQUESTS);
     }
 }
 
