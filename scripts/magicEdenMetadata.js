@@ -1,4 +1,3 @@
-import fs from "fs";
 import puppeteer from "puppeteer";
 import { buildMetadata, createMetadataFile } from "./buildMetadata.js";
 

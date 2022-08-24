@@ -11,3 +11,7 @@ https://api-mainnet.magiceden.io/all_collections_with_escrow_data?edge_cache=tru
 ## Solport API
 
 https://lapi.solport.io/nft/collections?page=1
+
+## SolSea
+
+https://solsea.io/k/all/all/f/2_all/
