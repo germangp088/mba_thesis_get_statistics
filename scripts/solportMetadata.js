@@ -20,16 +20,19 @@ const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
 const getURLsQty = () => urls.length;
 
 const buildURLs = async () => {
+        
+    if (fs.existsSync("./metadata/solport_success.json")) {
+        urlsSuccess = await getDataFromJSON("../metadata/solport_success.json", import.meta.url);
+    }
+
     if (fs.existsSync("./metadata/solport_failed.json")) {
         urlsToRetry = await getDataFromJSON("../metadata/solport_failed.json", import.meta.url);
+        urlsToRetry = urlsToRetry.filter(x => !urlsSuccess.some(y => y == x));
         if (urlsToRetry.length > 0) {
             urls = urls.concat(urlsToRetry)
         }
     }
-    
-    if (fs.existsSync("./metadata/solport_success.json")) {
-        urlsSuccess = await getDataFromJSON("../metadata/solport_success.json", import.meta.url);
-    }
+
     
     let max_requests_difference =  MAX_REQUESTS - getURLsQty();
 
@@ -113,8 +116,13 @@ const fetchURLs = async(urls) => {
 
     urls = responses.map((response) => !response.success ? response.url : '').filter(x => x != '');
 
-    const responsesToRetry = responses.filter(x => !x.success);
-    await retry(responsesToRetry, responses);
+    const successResponses = responses.filter(x => x.success);
+    urls = urls.filter(x => !successResponses.some(y => y.url == x));
+
+    const responsesToRetry = responses.filter(x => !x.success && !successResponses.some(y => y.url == x.url));
+    if (responsesToRetry.length > 0) {
+        await retry(responsesToRetry, responses);
+    }
 
     return responses;
 }
@@ -149,10 +157,12 @@ const buildSolport = async () => {
     const responses = await fetchURLs(urls);
     
     const urlsExecutedSucessfully = _.cloneDeep(responses.filter(x => x.success)).map(x => x.url);
+
     const successData = filterData(responses, true);
     const failedData = filterData(responses, false);
 
     if (successData.length > 0) {
+        urlsToRetry = urlsToRetry.filter(x => !urlsExecutedSucessfully.some(y => y == x));
         const newSolportData = {
             collections: combineArrays(solportData.collections, successData)
         }
