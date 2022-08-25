@@ -25,7 +25,7 @@ const getStatistics = async (data, filter, marketplace) => {
     const collections = tableData.map(x => x.Colecciones).reverse();
     const arithmeticAverage = calculateArithmeticAverage(collections);
 
-    console.log(`Media aritmetica de lanzamiento de colecciones: ${RichOutput.green(arithmeticAverage)}.\n`);
+    console.log(`Media aritmética de lanzamiento de colecciones: ${RichOutput.green(arithmeticAverage)}.\n`);
 
     return { arithmeticAverage, months, collections };
 }
