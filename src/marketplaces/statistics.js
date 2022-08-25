@@ -12,7 +12,7 @@ const getStatistics = async (data, filter, marketplace) => {
         monthElement.count = monthListedCollections?.length
     });
     
-    console.log(RichOutput.underscore(RichOutput.bold(RichOutput.brightBlue(`Cantidad de colecciones listadas por mes en ${marketplace}.`))));
+    console.log(RichOutput.underscore(RichOutput.bold(RichOutput.brightBlue(`Cantidad de colecciones listadas el último año en ${marketplace}.`))));
     const tableData = yearBasisObject.map((monthElement) => {
         return { 
             Fecha: monthElement.date,
