@@ -9,7 +9,7 @@ const solSeaArithmeticAverage = await getSolSeaArithmeticAverage();
 const arithmeticAverages = [magicEdenArithmeticAverage, solanArtArithmeticAverage, solSeaArithmeticAverage]
 
 const arithmeticAverage = calculateArithmeticAverage(arithmeticAverages);
-console.log(`Media aritmética de lanzamiento de colecciones total: ${RichOutput.green(arithmeticAverage)}.`);
+console.log(`Media aritmética de listado de colecciones total: ${RichOutput.green(arithmeticAverage)}.`);
 
 const estimatedStakingQty = calculatePercentage(arithmeticAverage, process.env.STAKING_PERCENTAJE)
 console.log(`\nTotal estimado de colecciones con plataforma de staking: ${RichOutput.green(estimatedStakingQty)}.`);
