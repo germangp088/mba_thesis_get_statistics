@@ -11,8 +11,16 @@ const arithmeticAverages = [magicEdenArithmeticAverage, solanArtArithmeticAverag
 const arithmeticAverage = calculateArithmeticAverage(arithmeticAverages);
 console.log(`Media aritmética de listado de colecciones total: ${RichOutput.green(arithmeticAverage)}.`);
 
+const highlightedText = (text) => RichOutput.underscore(RichOutput.bold(text));
+
 const estimatedStakingQty = calculatePercentage(arithmeticAverage, process.env.STAKING_PERCENTAJE)
-console.log(`\nTotal estimado de colecciones con plataforma de staking: ${RichOutput.green(estimatedStakingQty)}.`);
+console.log(`\nTotal estimado de colecciones ${highlightedText('mensual')} con plataforma de staking: ${RichOutput.green(estimatedStakingQty)}.`);
 
 const estimatedMintQty = calculatePercentage(arithmeticAverage, process.env.MINT_PERCENTAJE)
-console.log(`\nTotal estimado de colecciones con sitio de mint: ${RichOutput.green(estimatedMintQty)}.`);
+console.log(`\nTotal estimado de colecciones ${highlightedText('mensual')} con sitio de mint: ${RichOutput.green(estimatedMintQty)}.`);
+
+const anualEstimatedStakingQty = estimatedStakingQty * 12;
+console.log(`\nTotal estimado de colecciones ${highlightedText('anual')} con plataforma de staking: ${RichOutput.green(anualEstimatedStakingQty)}.`);
+
+const anualEstimatedMintQty = estimatedMintQty * 12;
+console.log(`\nTotal estimado de colecciones ${highlightedText('anual')} con sitio de mint: ${RichOutput.green(anualEstimatedMintQty)}.`);
