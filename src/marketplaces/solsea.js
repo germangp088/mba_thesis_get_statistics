@@ -3,7 +3,7 @@ import { getDataFromJSON } from "../proxy.js";
 import getStatistics from "./statistics.js";
 
 const getSolSeaArithmeticAverage = async () => {
-    const solSeaData = await getDataFromJSON("../metadata/solsea.json", import.meta.url);
+    const solSeaData = await getDataFromJSON("../metadata/solsea.json");
 
     const filter = (_) => new Array(solSeaData.arithmeticAverage);
     

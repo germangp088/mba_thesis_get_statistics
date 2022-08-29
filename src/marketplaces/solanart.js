@@ -3,7 +3,7 @@ import { getDataFromJSON } from "../proxy.js";
 import getStatistics from "./statistics.js";
 
 const getSolanArtArithmeticAverage = async () => {
-    const solanartData = await getDataFromJSON("../metadata/solanart.json", import.meta.url);
+    const solanartData = await getDataFromJSON("../metadata/solanart.json");
 
     const getDate = (seconds) => new Date(seconds * 1000).toISOString();
     const filter = (solanart, startDate, endDate) => solanart.filter(x => getDate(x.date) >= startDate &&

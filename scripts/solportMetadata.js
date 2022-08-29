@@ -22,11 +22,11 @@ const getURLsQty = () => urls.length;
 const buildURLs = async () => {
         
     if (fs.existsSync("./metadata/solport_success.json")) {
-        urlsSuccess = await getDataFromJSON("../metadata/solport_success.json", import.meta.url);
+        urlsSuccess = await getDataFromJSON("../metadata/solport_success.json");
     }
 
     if (fs.existsSync("./metadata/solport_failed.json")) {
-        urlsToRetry = await getDataFromJSON("../metadata/solport_failed.json", import.meta.url);
+        urlsToRetry = await getDataFromJSON("../metadata/solport_failed.json");
         urlsToRetry = urlsToRetry.filter(x => !urlsSuccess.some(y => y == x));
         if (urlsToRetry.length > 0) {
             urls = urls.concat(urlsToRetry)
@@ -152,7 +152,7 @@ const filterData = (responses, success = true) => {
 
 // Create solport metadata file.
 const buildSolport = async () => {
-    const solportData = await getDataFromJSON("../metadata/solport.json", import.meta.url);
+    const solportData = await getDataFromJSON("../metadata/solport.json");
     buildMetadata();
     await buildURLs();
     
